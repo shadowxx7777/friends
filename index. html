@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>رسالة إلك</title>
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#1b1233; --ink:#3b2a5a; --paper:#fff4f0; --env:#c7b3ff; --env2:#a98cf0; --teal:#6fe3c1; --muted:#a79bc4;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);font-family:"Aref Ruqaa",Georgia,serif;overflow:hidden}
+.stage{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;text-align:center}
+.hint{color:var(--muted);font-size:22px}
+.env{position:relative;width:min(300px,78vw);aspect-ratio:3/2;cursor:pointer;border:0;background:none;padding:0;perspective:800px;animation:bob 2.6s ease-in-out infinite}
+.env:focus-visible{outline:3px solid var(--teal);outline-offset:8px}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.env .body{position:absolute;inset:0;background:var(--env);border-radius:8px;box-shadow:0 14px 40px rgba(0,0,0,.45)}
+.env .left,.env .right{position:absolute;inset:0;background:var(--env2)}
+.env .left{clip-path:polygon(0 0,52% 52%,0 100%)}
+.env .right{clip-path:polygon(100% 0,48% 52%,100% 100%)}
+.env .bottom{position:absolute;inset:0;background:#9a7de0;clip-path:polygon(0 100%,50% 46%,100% 100%)}
+.env .flap{position:absolute;left:0;top:0;width:100%;height:58%;background:#dccfff;clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top;transition:transform .6s ease,z-index 0s .3s;z-index:3}
+.env .seal{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);z-index:4;transition:opacity .3s}
+.env.open{animation:none}
+.env.open .flap{transform:rotateX(180deg);z-index:0}
+.env.open .seal{opacity:0}
+.env .mini{position:absolute;left:8%;right:8%;top:8%;bottom:12%;background:var(--paper);border-radius:4px;transition:transform .6s .3s;z-index:1}
+.env.open .mini{transform:translateY(-34%)}
+
+.overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(27,18,51,.86);z-index:10;padding:20px}
+.overlay.show{display:flex}
+.card{width:min(420px,100%);background:var(--paper);color:var(--ink);border-radius:14px;padding:34px 24px 28px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:rise .6s ease-out}
+@keyframes rise{from{transform:translateY(60px) scale(.9);opacity:0}to{transform:none;opacity:1}}
+.card h1{font-size:clamp(26px,6vw,34px);margin:0 0 8px;line-height:1.5}
+.card p{margin:0 0 24px;font-size:20px;opacity:.8}
+.row{display:flex;gap:16px;justify-content:center;align-items:center;min-height:56px}
+.btn{font:inherit;font-size:22px;border:0;border-radius:999px;padding:12px 34px;cursor:pointer}
+.yes{background:#ff7a59;color:#fff}
+.no{background:#d8d0ec;color:var(--ink);touch-action:none}
+.no.fly{position:fixed;transition:left .25s ease,top .25s ease;z-index:20}
+.btn:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+.win{display:none}
+.note{min-height:34px;margin:0 0 14px;font-size:22px;font-weight:700;color:#c2410c;line-height:1.5}
+.win h1{font-size:clamp(28px,7vw,40px)}
+.card.done .ask{display:none}
+.card.done .win{display:block}
+.fx{position:fixed;bottom:-50px;z-index:30;pointer-events:none;animation:up linear forwards}
+@keyframes up{to{transform:translateY(-115vh) rotate(var(--r))}}
+.fx svg{display:block;width:100%;height:auto}
+@media (prefers-reduced-motion:reduce){.env,.card{animation:none}.fx{animation-duration:3s!important}}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <button class="env" id="env" aria-label="افتح الرسالة">
+    <div class="body"></div><div class="mini"></div><div class="left"></div><div class="right"></div><div class="bottom"></div>
+    <div class="flap"></div><div class="seal"><svg viewBox="0 0 40 40" width="40" height="40"><path d="M20 35 C8 26 5 17 10 11 C14 7 19 9 20 14 C21 9 26 7 30 11 C35 17 32 26 20 35Z" fill="#ff7a59" stroke="#fff4f0" stroke-width="1.6" stroke-dasharray="3 2.4"/></svg></div>
+  </button>
+  <div class="hint" id="hint">في رسالة إلك… اضغط عليها</div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="card" id="card">
+    <div class="ask">
+      <h1>هل سنبقى أعز الأصدقاء للأبد؟</h1>
+      <p>فكّر منيح قبل ما تجاوب 😉</p>
+      <div class="note" id="note" aria-live="polite"></div>
+      <div class="row">
+        <button class="btn yes" id="yes">نعم</button>
+        <button class="btn no" id="no">لا</button>
+      </div>
+    </div>
+    <div class="win">
+      <h1>كنت متأكد 🦋</h1>
+      <p>أعز الأصدقاء للأبد، وبعدها كمان ✨</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var env=document.getElementById("env"), overlay=document.getElementById("overlay"),
+      card=document.getElementById("card"), yes=document.getElementById("yes"),
+      no=document.getElementById("no"), hint=document.getElementById("hint");
+  var opened=false, dodges=0, lines=["لا","جرّب مرة ثانية","ما بتقدر 😏","أكيد؟","كبس نعم أسهل 💜","استسلم 😄"];
+
+  env.addEventListener("click",function(){
+    if(opened) return; opened=true;
+    env.classList.add("open"); hint.textContent="";
+    setTimeout(function(){overlay.classList.add("show"); yes.focus();},1100);
+  });
+
+  var stage=0, attempts=0, lastT=0, t1=0, ph=null, note=document.getElementById("note");
+  function calm(){
+    if(ph){ ph.remove(); ph=null; }
+    no.classList.remove("fly"); no.style.left=""; no.style.top=""; no.textContent="لا";
+    note.textContent="خلص كبيس، هي المرة مارح نبقى أصدقاء 💔";
+    t1=Date.now();
+  }
+  function dodge(e){
+    if(stage>=1) return;
+    if(e){ e.preventDefault(); }
+    var now=Date.now();
+    if(now-lastT>400){ attempts++; lastT=now; }
+    if(attempts>=5){ stage=1; calm(); return; }
+    dodges++;
+    var w=no.offsetWidth, h=no.offsetHeight, m=12;
+    if(!no.classList.contains("fly")){
+      ph=document.createElement("span"); ph.style.width=w+"px"; ph.style.height=h+"px";
+      no.parentNode.insertBefore(ph,no);
+      no.classList.add("fly");
+    }
+    var yr=yes.getBoundingClientRect(), x, y, tries=0, far=false;
+    do{
+      x=m+Math.random()*(window.innerWidth-w-2*m);
+      y=m+Math.random()*(window.innerHeight-h-2*m);
+      var dx=Math.max(yr.left-(x+w),x-yr.right,0), dy=Math.max(yr.top-(y+h),y-yr.bottom,0);
+      far=Math.sqrt(dx*dx+dy*dy)>150;
+      tries++;
+    }while(!far && tries<40);
+    no.style.left=x+"px"; no.style.top=y+"px";
+    no.textContent=lines[dodges%lines.length];
+  }
+  no.addEventListener("pointerenter",dodge);
+  no.addEventListener("pointerdown",dodge);
+  no.addEventListener("click",dodge);
+  no.addEventListener("click",function(){
+    if(stage===3){ yes.click(); return; }
+    if(stage!==1 || Date.now()-t1<700) return;
+    stage=3;
+    no.textContent="نعم"; no.className="btn yes";
+    note.textContent="بدك تختار نعم ولا اجي اقتلك 🔪🙂";
+    setTimeout(function(){ note.textContent=""; },4000);
+  });
+  no.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" ") dodge(e); });
+
+  function V(b){return '<svg viewBox="0 0 40 40">'+b+'</svg>';}
+  var shapes=[
+    function(){return V('<defs><radialGradient id="rb" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ff8a8a"/><stop offset=".55" stop-color="#e5252f"/><stop offset="1" stop-color="#a30018"/></radialGradient></defs><path d="M20 2 C29 2 33 9 32 15 C31 22 25 27 20 28 C15 27 9 22 8 15 C7 9 11 2 20 2Z" fill="url(#rb)"/><path d="M17.8 31 L22.2 31 L20 28Z" fill="#a30018"/><path d="M20 31 C16 34 24 36 20 39" fill="none" stroke="#fff4f0" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="14" cy="10" rx="2.6" ry="4.6" transform="rotate(28 14 10)" fill="#fff" opacity=".55"/>');},
+    function(){return V('<path d="M20 36 C7 26 4 16 9 10 C13 6 19 8 20 13 C21 8 27 6 31 10 C36 16 33 26 20 36Z" fill="#fff" stroke="#f2c4d3" stroke-width="1"/><path d="M20 36 C7 26 4 16 9 10 C13 6 19 8 20 13 C21 8 27 6 31 10 C36 16 33 26 20 36Z" transform="translate(20 22) scale(.68) translate(-20 -22)" fill="#ffe1ea"/><ellipse cx="12" cy="13" rx="2.4" ry="3.8" transform="rotate(40 12 13)" fill="#fff"/>');},
+    function(){var s='',i;for(i=0;i<8;i++){s+='<ellipse cx="20" cy="9.5" rx="5.2" ry="9" transform="rotate('+(i*45)+' 20 20)" fill="#7b2cbf"/>';}for(i=0;i<8;i++){s+='<ellipse cx="20" cy="12.5" rx="3.6" ry="6.5" transform="rotate('+(i*45+22.5)+' 20 20)" fill="#b388f5"/>';}return V(s+'<circle cx="20" cy="20" r="4.6" fill="#ffd86b"/><circle cx="20" cy="20" r="2" fill="#ff9f1c"/>');},
+    function(){return V('<path d="M20 39 V23" stroke="#4fc9a6" stroke-width="3" stroke-linecap="round"/><path d="M20 34 C25 33 28 30 29 27 C24 27 21 29 20 34Z" fill="#4fc9a6"/><path d="M8 5 L14 12 L20 4 L26 12 L32 5 C33 19 29 27 20 27 C11 27 7 19 8 5Z" fill="#9b5de5"/><path d="M14 12 L20 4 L26 12 C25 20 23 25 20 27 C17 25 15 20 14 12Z" fill="#c7a2ff"/>');},
+    function(){var s='';for(var i=-2;i<=2;i++){s+='<ellipse cx="20" cy="20" rx="5" ry="14" transform="rotate('+(i*28)+' 20 34)" fill="'+(i%2?'#b388f5':'#8e4fe0')+'" stroke="rgba(255,255,255,.35)" stroke-width="1"/>';}return V(s);}
+  ];
+  var wts=[0,0,1,1,2,3,4];
+  function shape(){return shapes[wts[Math.floor(Math.random()*wts.length)]]();}
+  function burst(n){
+    for(var i=0;i<n;i++){
+      (function(i){
+        setTimeout(function(){
+          var s=document.createElement("span");
+          s.className="fx"; s.innerHTML=shape();
+          s.style.left=(Math.random()*96)+"vw";
+          s.style.width=(28+Math.random()*34)+"px";
+          s.style.animationDuration=(3.5+Math.random()*3)+"s";
+          s.style.setProperty("--r",(Math.random()*120-60)+"deg");
+          document.body.appendChild(s);
+          setTimeout(function(){s.remove();},7000);
+        },i*70);
+      })(i);
+    }
+  }
+  yes.addEventListener("click",function(){
+    no.style.display="none";
+    card.classList.add("done");
+    burst(70);
+    var t=setInterval(function(){burst(14);},2500);
+    setTimeout(function(){clearInterval(t);},15000);
+  });
+})();
+</script>
+</body>
+</html>
