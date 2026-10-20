@@ -53,10 +53,12 @@ html,body{margin:0;height:100%;background:var(--bg);font-family:"Aref Ruqaa",Geo
 .fx{position:fixed;bottom:-50px;z-index:30;pointer-events:none;animation:up linear forwards}
 @keyframes up{to{transform:translateY(-115vh) rotate(var(--r))}}
 .fx svg{display:block;width:100%;height:auto}
+.credit{position:fixed;left:14px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:40;pointer-events:none;color:var(--muted);font-size:16px;opacity:.8;direction:ltr}
 @media (prefers-reduced-motion:reduce){.env,.card{animation:none}.fx{animation-duration:3s!important}}
 </style>
 </head>
 <body>
+<div class="credit">© Shadow &nbsp;|&nbsp; IG: shadow.____.7</div>
 <div class="stage" id="stage">
   <button class="env" id="env" aria-label="افتح الرسالة">
     <div class="body"></div><div class="mini"></div><div class="left"></div><div class="right"></div><div class="bottom"></div>
@@ -70,110 +72,4 @@ html,body{margin:0;height:100%;background:var(--bg);font-family:"Aref Ruqaa",Geo
     <div class="ask">
       <h1>هل سنبقى أعز الأصدقاء للأبد؟</h1>
       <p>فكّر منيح قبل ما تجاوب 😉</p>
-      <div class="note" id="note" aria-live="polite"></div>
-      <div class="row">
-        <button class="btn yes" id="yes">نعم</button>
-        <button class="btn no" id="no">لا</button>
-      </div>
-    </div>
-    <div class="win">
-      <h1>كنت متأكد 🦋</h1>
-      <p>أعز الأصدقاء للأبد، وبعدها كمان ✨</p>
-    </div>
-  </div>
-</div>
-
-<script>
-(function(){
-  var env=document.getElementById("env"), overlay=document.getElementById("overlay"),
-      card=document.getElementById("card"), yes=document.getElementById("yes"),
-      no=document.getElementById("no"), hint=document.getElementById("hint");
-  var opened=false, dodges=0, lines=["لا","جرّب مرة ثانية","ما بتقدر 😏","أكيد؟","كبس نعم أسهل 💜","استسلم 😄"];
-
-  env.addEventListener("click",function(){
-    if(opened) return; opened=true;
-    env.classList.add("open"); hint.textContent="";
-    setTimeout(function(){overlay.classList.add("show"); yes.focus();},1100);
-  });
-
-  var stage=0, attempts=0, lastT=0, t1=0, ph=null, note=document.getElementById("note");
-  function calm(){
-    if(ph){ ph.remove(); ph=null; }
-    no.classList.remove("fly"); no.style.left=""; no.style.top=""; no.textContent="لا";
-    note.textContent="خلص كبيس، هي المرة مارح نبقى أصدقاء 💔";
-    t1=Date.now();
-  }
-  function dodge(e){
-    if(stage>=1) return;
-    if(e){ e.preventDefault(); }
-    var now=Date.now();
-    if(now-lastT>400){ attempts++; lastT=now; }
-    if(attempts>=5){ stage=1; calm(); return; }
-    dodges++;
-    var w=no.offsetWidth, h=no.offsetHeight, m=12;
-    if(!no.classList.contains("fly")){
-      ph=document.createElement("span"); ph.style.width=w+"px"; ph.style.height=h+"px";
-      no.parentNode.insertBefore(ph,no);
-      no.classList.add("fly");
-    }
-    var yr=yes.getBoundingClientRect(), x, y, tries=0, far=false;
-    do{
-      x=m+Math.random()*(window.innerWidth-w-2*m);
-      y=m+Math.random()*(window.innerHeight-h-2*m);
-      var dx=Math.max(yr.left-(x+w),x-yr.right,0), dy=Math.max(yr.top-(y+h),y-yr.bottom,0);
-      far=Math.sqrt(dx*dx+dy*dy)>150;
-      tries++;
-    }while(!far && tries<40);
-    no.style.left=x+"px"; no.style.top=y+"px";
-    no.textContent=lines[dodges%lines.length];
-  }
-  no.addEventListener("pointerenter",dodge);
-  no.addEventListener("pointerdown",dodge);
-  no.addEventListener("click",dodge);
-  no.addEventListener("click",function(){
-    if(stage===3){ yes.click(); return; }
-    if(stage!==1 || Date.now()-t1<700) return;
-    stage=3;
-    no.textContent="نعم"; no.className="btn yes";
-    note.textContent="بدك تختار نعم ولا اجي اقتلك 🔪🙂";
-    setTimeout(function(){ note.textContent=""; },4000);
-  });
-  no.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" ") dodge(e); });
-
-  function V(b){return '<svg viewBox="0 0 40 40">'+b+'</svg>';}
-  var shapes=[
-    function(){return V('<defs><radialGradient id="rb" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ff8a8a"/><stop offset=".55" stop-color="#e5252f"/><stop offset="1" stop-color="#a30018"/></radialGradient></defs><path d="M20 2 C29 2 33 9 32 15 C31 22 25 27 20 28 C15 27 9 22 8 15 C7 9 11 2 20 2Z" fill="url(#rb)"/><path d="M17.8 31 L22.2 31 L20 28Z" fill="#a30018"/><path d="M20 31 C16 34 24 36 20 39" fill="none" stroke="#fff4f0" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="14" cy="10" rx="2.6" ry="4.6" transform="rotate(28 14 10)" fill="#fff" opacity=".55"/>');},
-    function(){return V('<path d="M20 36 C7 26 4 16 9 10 C13 6 19 8 20 13 C21 8 27 6 31 10 C36 16 33 26 20 36Z" fill="#fff" stroke="#f2c4d3" stroke-width="1"/><path d="M20 36 C7 26 4 16 9 10 C13 6 19 8 20 13 C21 8 27 6 31 10 C36 16 33 26 20 36Z" transform="translate(20 22) scale(.68) translate(-20 -22)" fill="#ffe1ea"/><ellipse cx="12" cy="13" rx="2.4" ry="3.8" transform="rotate(40 12 13)" fill="#fff"/>');},
-    function(){var s='',i;for(i=0;i<8;i++){s+='<ellipse cx="20" cy="9.5" rx="5.2" ry="9" transform="rotate('+(i*45)+' 20 20)" fill="#7b2cbf"/>';}for(i=0;i<8;i++){s+='<ellipse cx="20" cy="12.5" rx="3.6" ry="6.5" transform="rotate('+(i*45+22.5)+' 20 20)" fill="#b388f5"/>';}return V(s+'<circle cx="20" cy="20" r="4.6" fill="#ffd86b"/><circle cx="20" cy="20" r="2" fill="#ff9f1c"/>');},
-    function(){return V('<path d="M20 39 V23" stroke="#4fc9a6" stroke-width="3" stroke-linecap="round"/><path d="M20 34 C25 33 28 30 29 27 C24 27 21 29 20 34Z" fill="#4fc9a6"/><path d="M8 5 L14 12 L20 4 L26 12 L32 5 C33 19 29 27 20 27 C11 27 7 19 8 5Z" fill="#9b5de5"/><path d="M14 12 L20 4 L26 12 C25 20 23 25 20 27 C17 25 15 20 14 12Z" fill="#c7a2ff"/>');},
-    function(){var s='';for(var i=-2;i<=2;i++){s+='<ellipse cx="20" cy="20" rx="5" ry="14" transform="rotate('+(i*28)+' 20 34)" fill="'+(i%2?'#b388f5':'#8e4fe0')+'" stroke="rgba(255,255,255,.35)" stroke-width="1"/>';}return V(s);}
-  ];
-  var wts=[0,0,1,1,2,3,4];
-  function shape(){return shapes[wts[Math.floor(Math.random()*wts.length)]]();}
-  function burst(n){
-    for(var i=0;i<n;i++){
-      (function(i){
-        setTimeout(function(){
-          var s=document.createElement("span");
-          s.className="fx"; s.innerHTML=shape();
-          s.style.left=(Math.random()*96)+"vw";
-          s.style.width=(28+Math.random()*34)+"px";
-          s.style.animationDuration=(3.5+Math.random()*3)+"s";
-          s.style.setProperty("--r",(Math.random()*120-60)+"deg");
-          document.body.appendChild(s);
-          setTimeout(function(){s.remove();},7000);
-        },i*70);
-      })(i);
-    }
-  }
-  yes.addEventListener("click",function(){
-    no.style.display="none";
-    card.classList.add("done");
-    burst(70);
-    var t=setInterval(function(){burst(14);},2500);
-    setTimeout(function(){clearInterval(t);},15000);
-  });
-})();
-</script>
-</body>
-</html>
+      <div class="note" id="note" aria-live="pol
